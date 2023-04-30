@@ -47,6 +47,18 @@ def update(conn, table, set_values, where):
     cur.execute(f"UPDATE {table} SET {set_update} WHERE {where_update}", values)
     conn.commit()
 
+def delete_all(conn, table):
+    cur = conn.cursor()
+    cur.execute(f"DELETE FROM {table}")
+    conn.commit()
+
+def delete_where(conn, table, query):
+    cur = conn.cursor()
+    values = tuple(query.values())
+    conditions = ' AND '.join(f'{k} = ?' for k in query.keys())
+    cur.execute(f"DELETE FROM {table} WHERE {conditions}", values)
+    conn.commit()
+
 if __name__ == '__main__':
     db_file = "books_db"
     conn = create_connection(db_file)
@@ -70,10 +82,16 @@ if __name__ == '__main__':
     book_5 = (author_2_id, "Powrót Króla", 1955, "Dark Fantasy", "Koniec wycieczki")
     add_book(conn, book_5)
     print(select_all(conn, "books"))
+    print(select_all(conn, "authors"))
     print(select_where(conn, "authors", {"first_name": "Andrzej"}))
     print(select_where(conn, "books", {"genre": "Fantasy"}))
-    print(update(conn, "authors", {"first_name": "John Ronald Reuel"}, {"id": 2}))
+    update(conn, "authors", {"first_name": "John Ronald Reuel"}, {"id": 2})
+    update(conn, "authors", {"death_date": "1973-09-02"}, {"id": 2})
     print(select_all(conn, "authors"))
+    delete_all(conn, "authors")
+    delete_where(conn, "books", {"genre": "Fantasy"})
+    print(select_all(conn, "authors"))
+    print(select_all(conn, "books"))
     conn.close()
 
 
