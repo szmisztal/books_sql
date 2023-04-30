@@ -39,6 +39,14 @@ def select_where(conn, table, query):
    rows = cur.fetchall()
    return rows
 
+def update(conn, table, set_values, where):
+    cur = conn.cursor()
+    set_update = ', '.join(f"{k} = ?" for k in set_values.keys())
+    where_update = ' AND '.join(f"{k} = ?" for k in where.keys())
+    values = tuple(set_values.values()) + tuple(where.values())
+    cur.execute(f"UPDATE {table} SET {set_update} WHERE {where_update}", values)
+    conn.commit()
+
 if __name__ == '__main__':
     db_file = "books_db"
     conn = create_connection(db_file)
@@ -61,10 +69,11 @@ if __name__ == '__main__':
     add_book(conn, book_4)
     book_5 = (author_2_id, "Powrót Króla", 1955, "Dark Fantasy", "Koniec wycieczki")
     add_book(conn, book_5)
-    conn.commit()
     print(select_all(conn, "books"))
     print(select_where(conn, "authors", {"first_name": "Andrzej"}))
     print(select_where(conn, "books", {"genre": "Fantasy"}))
+    print(update(conn, "authors", {"first_name": "John Ronald Reuel"}, {"id": 2}))
+    print(select_all(conn, "authors"))
     conn.close()
 
 
